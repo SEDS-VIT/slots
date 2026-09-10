@@ -9,6 +9,7 @@ function IndexPage() {
     const { data: session } = authClient.useSession();
 
     const handleLogin = async () => {
+        console.log("CLOCKED");
         await authClient.signIn.social({
             provider: "google",
             callbackURL: "/home",

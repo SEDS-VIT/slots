@@ -1,16 +1,8 @@
-import { drizzle } from "drizzle-orm/libsql";
-import * as schema from "./schema";
+import { drizzle } from 'drizzle-orm/libsql';
 
-if (!process.env.TURSO_DATABASE_URL) {
-    throw new Error("TURSO_DATABASE_URL is missing in environment variables.");
-}
-
-// Drizzle v0.33+ Unified API
 export const db = drizzle({
     connection: {
-        url: process.env.TURSO_DATABASE_URL,
-        authToken: process.env.TURSO_AUTH_TOKEN,
-    },
-    schema,
+        url: import.meta.env.VITE_TURSO_DATABASE_URL,
+        authToken: import.meta.env.VITE_TURSO_AUTH_TOKEN
+    }
 });
-

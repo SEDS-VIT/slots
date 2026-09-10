@@ -1,13 +1,19 @@
+import {v7 as uuidv7} from 'uuid'
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core'
 // For Slots
 export const registration = sqliteTable("registration", {
     registrationNumber: text('registrationNumber').primaryKey(),
-    slot: integer('slot').default(-1)
 })
 
 export const slot = sqliteTable("slot", {
     id: integer("slot").primaryKey(),
-    capacity: integer("capacity").default(195)
+    maxCapacity: integer("max_capacity").default(195)
+})
+
+export const bookings = sqliteTable("bookings", {
+    id: text("id").primaryKey().$default(() => uuidv7()).notNull(),
+    userId: text("user_id").references(() => user.id).unique(),
+    slot: integer("slot").references(() => slot.id)
 })
 
 // For Better Auth
