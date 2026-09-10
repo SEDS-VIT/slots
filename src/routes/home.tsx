@@ -3,13 +3,20 @@ import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { getSession } from "@/lib/auth.functions";
 import { authClient } from "@/lib/auth-client";
 import { registration, slot, bookings } from "@/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, count } from "drizzle-orm";
 import { db } from "@/db";
 import { useState } from 'react';
 
 export async function handleSlot(slotId: number, userId: string, setAccepted: CallableFunction) {
     const users = await db.select().from(bookings).where(eq(bookings.userId, userId));
     const user = users[0];
+    const curCap = await db.select({count: count()}).from(bookings).where(eq(bookings.slot, slotId))
+    const maxCap = await db.select({count: slot.maxCapacity}).from(slot).where(eq(slot.id, slotId))
+    const capacity = maxCap[0]?.count ?? 195;
+    if ( curCap[0].count >= capacity){
+        setAccepted(false);
+        return
+    }
     if (user != null) {
         await db.delete(bookings).where(eq(bookings.userId, userId));
     }
@@ -27,7 +34,7 @@ export async function handleSlot(slotId: number, userId: string, setAccepted: Ca
             .having(sql`count(${bookings.id}) < ${slot.maxCapacity}`)
     )
         .returning(); // <-- Add this here
-    setAccepted(insertedBooking == null);
+    setAccepted(insertedBooking != null);
 
 }
 
