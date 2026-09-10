@@ -12,7 +12,7 @@ export const slot = sqliteTable("slot", {
 
 export const bookings = sqliteTable("bookings", {
     id: text("id").primaryKey().$default(() => uuidv7()).notNull(),
-    userId: text("user_id").references(() => user.id).unique(),
+    userId: text("user_id").references(() => user.id),
     slot: integer("slot").references(() => slot.id)
 })
 
