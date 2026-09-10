@@ -7,7 +7,7 @@ import { eq, sql, count } from "drizzle-orm";
 import { db } from "@/db";
 import { useState } from 'react';
 
-export async function handleSlot(slotId: number, userId: string, setAccepted: CallableFunction) {
+export async function handleSlot(slotId: number, userId: string, setAccepted: CallableFunction, setSlot: CallableFunction) {
     const users = await db.select().from(bookings).where(eq(bookings.userId, userId));
     const user = users[0];
     const curCap = await db.select({count: count()}).from(bookings).where(eq(bookings.slot, slotId))
@@ -35,6 +35,7 @@ export async function handleSlot(slotId: number, userId: string, setAccepted: Ca
     )
         .returning(); // <-- Add this here
     setAccepted(insertedBooking != null);
+    setSlot(slotId);
 
 }
 
@@ -91,6 +92,7 @@ function ProfilePage() {
     const { lastName, registrationData } = Route.useLoaderData();
     const router = useRouter();
     const [accepted, setAccepted] = useState<boolean | null>(null);
+    const [slot, setSlot] = useState<number | null>(registrationData.slot);
 
     const handleLogout = async () => {
         await authClient.signOut({
@@ -122,44 +124,44 @@ function ProfilePage() {
                     <>
                     <div style={{ padding: "1rem", backgroundColor: "#dcfce7", color: "#166534", borderRadius: "0.5rem", border: "1px solid #bbf7d0" }}>
                         <h3 style={{ margin: "0 0 0.5rem 0" }}>✅ Registration Confirmed</h3>
-                        <p style={{ margin: 0 }}>You are registered in <strong>Slot {registrationData.slot == null ? "Not selected" : registrationData.slot}</strong>.</p>
-                        {registrationData.slot == null ? (
+                        <p style={{ margin: 0 }}>You are registered in <strong>Slot {slot == null ? "Not selected" : slot}</strong>.</p>
+                        {slot == null ? (
                             <p>You have not yet chosen a slot</p>
                         ) : (
-                            <p>You have registered in slot: {registrationData.slot}</p>
+                            <p>You have registered in slot: {slot}</p>
                         )
                         }
                         <button
-                            onClick={() => handleSlot(1, user.id, setAccepted)}
+                            onClick={() => handleSlot(1, user.id, setAccepted, setSlot)}
                             style={{
                                 padding: "0.5rem 1rem",
                                 backgroundColor: "#ef4444",
                                 color: "white",
-                                border: registrationData.slot === 1 ? "2px solid green" : "none",
+                                border: slot === 1 ? "2px solid green" : "none",
                                 borderRadius: "0.375rem",
                                 fontWeight: "bold",
                                 cursor: "pointer"
                             }}
                         >Slot 1</button>
                         <button
-                            onClick={() => handleSlot(2, user.id, setAccepted)}
+                            onClick={() => handleSlot(2, user.id, setAccepted, setSlot)}
                             style={{
                                 padding: "0.5rem 1rem",
                                 backgroundColor: "#ef4444",
                                 color: "white",
-                                border: registrationData.slot === 2 ? "2px solid green" : "none",
+                                border: slot === 2 ? "2px solid green" : "none",
                                 borderRadius: "0.375rem",
                                 fontWeight: "bold",
                                 cursor: "pointer"
                             }}
                         >Slot 2</button>
                         <button
-                            onClick={() => handleSlot(3, user.id, setAccepted)}
+                            onClick={() => handleSlot(3, user.id, setAccepted, setSlot)}
                             style={{
                                 padding: "0.5rem 1rem",
                                 backgroundColor: "#ef4444",
                                 color: "white",
-                                border: registrationData.slot === 3 ? "2px solid green" : "none",
+                                border: slot === 3 ? "2px solid green" : "none",
                                 borderRadius: "0.375rem",
                                 fontWeight: "bold",
                                 cursor: "pointer"
