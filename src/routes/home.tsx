@@ -302,6 +302,54 @@ function ProfilePage() {
         .glow-text-green { color: #34d399; font-size: 0.9rem; margin-top: 1rem; }
         .glow-text-red { color: #f87171; font-size: 0.9rem; margin-top: 1rem; }
 
+        .whatsapp-box {
+            margin-bottom: 2rem;
+            background: rgba(3, 7, 18, 0.6);
+            border: 1px solid rgba(37, 211, 102, 0.3);
+            border-left: 3px solid #25d366;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .whatsapp-title {
+            margin: 0 0 0.5rem 0;
+            color: #4ade80;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .whatsapp-text {
+            margin: 0 0 1.25rem 0;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.85rem 1.5rem;
+            background: rgba(37, 211, 102, 0.12);
+            border: 1px solid rgba(37, 211, 102, 0.5);
+            color: #86efac;
+            border-radius: 8px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .whatsapp-btn:hover {
+            background: rgba(37, 211, 102, 0.25);
+            color: #fff;
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.3);
+        }
+
         /* --- MOBILE RESPONSIVE MEDIA QUERIES --- */
         @media (max-width: 640px) {
             .space-bg {
@@ -364,6 +412,7 @@ function ProfilePage() {
                     </div>
 
                     {registrationData.isRegistered ? (
+                        <div>
                         <div className="status-box status-success">
                             <h3 style={{ margin: "0 0 0.5rem 0", color: "#34d399", display: "flex", alignItems: "center", gap: "8px", fontSize: "1.1rem" }}>
                                 <span style={{ fontSize: "1.2rem" }}>●</span> Authentication Valid
@@ -435,6 +484,28 @@ function ProfilePage() {
                                 {accepted === true && <p className="glow-text-green">Transmission logged. Trajectory locked.</p>}
                                 {accepted === false && <p className="glow-text-red">Access denied. Sector capacity exceeded.</p>}
                             </div>
+                        </div>
+
+                        <div className="whatsapp-box">
+                            <h3 className="whatsapp-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                                </svg>
+                                Crew Channel Open
+                            </h3>
+                            <p className="whatsapp-text">
+                                Join the official WhatsApp group for event updates, rooftop briefings, and live announcements.
+                            </p>
+                            {/* Placeholder group invite link — replace with the real WhatsApp group link */}
+                            <a
+                                href="https://chat.whatsapp.com/K9PO55xb0c8EzrrEqXWxsf?s=cl&p=a&mlu=4&ilr=4"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="whatsapp-btn"
+                            >
+                                Join WhatsApp Group
+                            </a>
+                        </div>
                         </div>
                     ) : (
                         <div className="status-box status-error">
