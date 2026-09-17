@@ -444,7 +444,7 @@ function IndexPage() {
                                         </p>
                                     </div>
                                     <Link to="/home" className="enter-btn">
-                                        Reserve Your Slot
+                                        Check Your Slot
                                     </Link>
                                 </div>
                             ) : (
