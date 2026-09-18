@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { getSession } from "@/lib/auth.functions";
@@ -6,10 +5,16 @@ import { authClient } from "@/lib/auth-client";
 import { db } from '#/db';
 import { bookings, registration } from '#/db/schema';
 import { eq } from 'drizzle-orm';
-import { OmniQRScanner } from "@/integrations/qr";
 
 // 1. Instantiate the QueryClient outside the component to prevent recreation on re-renders
 const queryClient = new QueryClient();
+
+// Configure the Google Drive links per slot
+const SLOT_DRIVE_LINKS: Record<number, string> = {
+    1: "https://drive.google.com/drive/folders/18k5DQTxiz8gOo-8dpoeHhZmp0fm8hZ1h",
+    2: "https://drive.google.com/drive/folders/YOUR_SLOT_2_FOLDER_ID",
+    3: "https://drive.google.com/drive/folders/YOUR_SLOT_3_FOLDER_ID",
+};
 
 // Server-side function to handle DB queries securely
 export async function fetchMissionStatus(lastName: string, userId: string) {
@@ -63,9 +68,6 @@ function MissionConsole() {
     const { lastName, userId } = Route.useLoaderData();
     const router = useRouter();
 
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
-
-    // Now useQuery will work as it is wrapped by QueryClientProvider
     const { data: missionData, isLoading } = useQuery({
         queryKey: ['missionStatus', userId, lastName],
         queryFn: () => fetchMissionStatus(lastName, userId),
@@ -78,6 +80,8 @@ function MissionConsole() {
             },
         });
     };
+
+    const driveLink = missionData?.slot ? SLOT_DRIVE_LINKS[missionData.slot] : null;
 
     return (
         <main className="min-h-screen bg-[#030712] text-slate-200 font-sans flex justify-center items-start pt-16 px-4 pb-16 sm:px-4 bg-[image:linear-gradient(rgba(79,70,229,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(79,70,229,0.05)_1px,transparent_1px),radial-gradient(circle_at_top_right,rgba(30,27,75,0.8),#030712_60%)] bg-[length:30px_30px,30px_30px,100%_100%]">
@@ -120,7 +124,7 @@ function MissionConsole() {
                             </p>
                         </div>
 
-                        {/* Event Pictures Scanner Section */}
+                        {/* Direct Slot-based Drive Link Section */}
                         <div className="mb-8 bg-gray-950/60 border border-blue-500/30 border-l-[3px] border-l-blue-500 rounded-xl p-6">
                             <h3 className="m-0 mb-2 text-blue-400 text-lg flex items-center gap-2 font-semibold">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -130,25 +134,26 @@ function MissionConsole() {
                                 Event Archives
                             </h3>
                             <p className="m-0 mb-5 text-slate-400 text-sm leading-relaxed">
-                                Access the mission gallery. Initialize optical scanner to decode the secure Drive link via QR.
+                                Access the secure photo gallery calibrated for <strong className="text-white">Slot {missionData.slot}</strong>.
                             </p>
 
-                            {!isScannerOpen ? (
-                                <button
-                                    onClick={() => setIsScannerOpen(true)}
-                                    className="w-full inline-flex justify-center items-center gap-2 px-6 py-4 bg-blue-500/10 border border-blue-500/50 text-blue-300 rounded-lg font-bold tracking-wide uppercase text-sm transition-all duration-200 hover:bg-blue-500/25 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] cursor-pointer"
+                            {driveLink ? (
+                                <a
+                                    href={driveLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="w-full inline-flex justify-center items-center gap-2 px-6 py-4 bg-blue-500/10 border border-blue-500/50 text-blue-300 rounded-lg font-bold tracking-wide uppercase text-sm transition-all duration-200 hover:bg-blue-500/25 hover:text-white hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] no-underline"
                                 >
-                                    Initiate Optical Scanner
-                                </button>
+                                    Open Slot {missionData.slot} Drive Gallery
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                        <polyline points="15 3 21 3 21 9" />
+                                        <line x1="10" y1="14" x2="21" y2="3" />
+                                    </svg>
+                                </a>
                             ) : (
-                                <div className="flex flex-col gap-4 animate-in fade-in duration-300">
-                                    <OmniQRScanner />
-                                    <button
-                                        onClick={() => setIsScannerOpen(false)}
-                                        className="w-full px-6 py-3 bg-slate-800/50 border border-slate-600 text-slate-300 rounded-lg font-bold tracking-wide uppercase text-xs transition-all duration-200 hover:bg-slate-700 hover:text-white cursor-pointer"
-                                    >
-                                        Abort Scan
-                                    </button>
+                                <div className="p-3 bg-red-950/40 border border-red-500/30 rounded text-red-300 text-xs">
+                                    No archive link configured for assigned slot.
                                 </div>
                             )}
                         </div>
