@@ -100,30 +100,58 @@ export function OmniQRScanner() {
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         facingMode: 'environment',
-                        // Ask for 1080p so the sensor has sufficient detail
                         width: { ideal: 1920 },
                         height: { ideal: 1080 },
                     },
                 });
 
+                // Abort cleanup if component unmounted while waiting for userMedia
+                if (!isActive) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    return;
+                }
+
+                streamRef.current = stream;
+
+                // Apply hardware zoom & continuous focus where supported
                 const track = stream.getVideoTracks()[0];
-                const capabilities: any = track.getCapabilities ? track.getCapabilities() : {};
-                const advancedConstraints: any = {};
+                if (track && track.getCapabilities) {
+                    const capabilities: any = track.getCapabilities();
+                    const advancedConstraints: any = {};
 
-                // 1. Force continuous autofocus where supported
-                if (capabilities.focusMode?.includes('continuous')) {
-                    advancedConstraints.focusMode = 'continuous';
+                    if (capabilities.focusMode?.includes('continuous')) {
+                        advancedConstraints.focusMode = 'continuous';
+                    }
+
+                    if ('zoom' in capabilities) {
+                        advancedConstraints.zoom = Math.min(2.0, capabilities.zoom.max);
+                    }
+
+                    if (Object.keys(advancedConstraints).length > 0) {
+                        await track.applyConstraints({ advanced: [advancedConstraints] }).catch(() => {
+                            // Silently ignore if constraints are unsupported
+                        });
+                    }
                 }
 
-                // 2. Apply a modest 1.5x - 2x zoom if supported
-                if ('zoom' in capabilities) {
-                    advancedConstraints.zoom = Math.min(2.0, capabilities.zoom.max);
-                }
+                // Bind stream and kick off rendering & scanning
+                const video = videoRef.current;
+                if (video) {
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', 'true');
 
-                if (Object.keys(advancedConstraints).length > 0) {
-                    await track.applyConstraints({ advanced: [advancedConstraints] }).catch(() => {
-                        // Silently continue if the device rejects advanced constraints
-                    });
+                    try {
+                        await video.play();
+                    } catch (err: unknown) {
+                        if (err instanceof DOMException && err.name === 'AbortError') {
+                            return;
+                        }
+                        throw err;
+                    }
+
+                    if (isActive) {
+                        animationFrameId.current = requestAnimationFrame(scanFrame);
+                    }
                 }
             } catch (err: unknown) {
                 if (!isActive) return;
@@ -159,6 +187,7 @@ export function OmniQRScanner() {
                     }`}
                 muted
                 playsInline
+                autoPlay
             />
             <canvas ref={canvasRef} className="hidden" />
 
