@@ -98,34 +98,32 @@ export function OmniQRScanner() {
         const startCamera = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: 'environment' },
+                    video: {
+                        facingMode: 'environment',
+                        // Ask for 1080p so the sensor has sufficient detail
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                    },
                 });
 
-                // Abort cleanup if effect unmounted before getUserMedia returned
-                if (!isActive) {
-                    stream.getTracks().forEach((track) => track.stop());
-                    return;
+                const track = stream.getVideoTracks()[0];
+                const capabilities: any = track.getCapabilities ? track.getCapabilities() : {};
+                const advancedConstraints: any = {};
+
+                // 1. Force continuous autofocus where supported
+                if (capabilities.focusMode?.includes('continuous')) {
+                    advancedConstraints.focusMode = 'continuous';
                 }
 
-                streamRef.current = stream;
+                // 2. Apply a modest 1.5x - 2x zoom if supported
+                if ('zoom' in capabilities) {
+                    advancedConstraints.zoom = Math.min(2.0, capabilities.zoom.max);
+                }
 
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
-                    videoRef.current.setAttribute('playsinline', 'true');
-
-                    try {
-                        await videoRef.current.play();
-                    } catch (err: unknown) {
-                        // Ignore benign abort errors caused by navigation or fast unmounting
-                        if (err instanceof DOMException && err.name === 'AbortError') {
-                            return;
-                        }
-                        throw err;
-                    }
-
-                    if (isActive) {
-                        animationFrameId.current = requestAnimationFrame(scanFrame);
-                    }
+                if (Object.keys(advancedConstraints).length > 0) {
+                    await track.applyConstraints({ advanced: [advancedConstraints] }).catch(() => {
+                        // Silently continue if the device rejects advanced constraints
+                    });
                 }
             } catch (err: unknown) {
                 if (!isActive) return;
