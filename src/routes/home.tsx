@@ -12,8 +12,8 @@ const queryClient = new QueryClient();
 // Configure the Google Drive links per slot
 const SLOT_DRIVE_LINKS: Record<number, string> = {
     1: "https://drive.google.com/drive/folders/18k5DQTxiz8gOo-8dpoeHhZmp0fm8hZ1h",
-    2: "https://drive.google.com/drive/folders/YOUR_SLOT_2_FOLDER_ID",
-    3: "https://drive.google.com/drive/folders/YOUR_SLOT_3_FOLDER_ID",
+    2: "https://drive.google.com/drive/folders/1TGTb5FJS8OUlpERoAx71vWDtqjMAzeR-",
+    3: "https://drive.google.com/drive/folders/1aTupwLtYwLRv5TcoA52kYrXMlZoYKqz5",
 };
 
 // Server-side function to handle DB queries securely
